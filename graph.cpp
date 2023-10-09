@@ -1,16 +1,20 @@
 #include "graph.h"
 
-Graph::Graph(int n, int m) {
+Graph::Graph(int n) {
     this->n = n;
-    this->m = m;
     this->curr_arc = 0;
-    N_minus = delta_plus = delta_minus = vector<vector<int>>(n + 1);
-    adj_matrix = vector<vector<int>>(n + 1, vector<int>(n + 1, 0));
+    this->delta_plus = vector<vector<int>>(n + 1, vector<int>(0));
+    this->N_plus = vector<vector<int>>(n + 1, vector<int>(0));
+    this->N_minus = vector<vector<int>>(n + 1, vector<int>(0));
+    this->delta_minus = vector<vector<int>>(n + 1, vector<int>(0));
 
-    score = vector<int>(n + 1);
-    x = y = vector<float>(n + 1);
-    arc_cost = vector<vector<int>>(n + 1, vector<int>(n + 1));
-    key_arc = vector<pair<int, int>>(m);
+    this->adj_matrix = vector<vector<int>>(n + 1, vector<int>(n + 1, 0));
+    this->arc_key = vector<vector<int>>(n + 1, vector<int>(n + 1, -1));
+
+    this->score = vector<int>(n + 1);
+    this->x = vector<float>(n + 1);
+    this->y = vector<float>(n + 1);
+    this->key_arc = vector<pair<int, int>>();
 }
 
 float Graph::dist(int i, int j) {
@@ -20,10 +24,10 @@ float Graph::dist(int i, int j) {
 }
 
 void Graph::insert_edge(int i, int j) {
-    this->arc_cost[i][j] = dist(i, j);
+    this->arc_cost.push_back(dist(i, j));
 
     this->arc_key[i][j] = curr_arc;
-    this->key_arc[curr_arc] = {i, j};
+    key_arc.push_back({i, j});
     this->delta_plus[i].push_back(curr_arc);
     this->delta_minus[j].push_back(curr_arc);
 
@@ -31,21 +35,21 @@ void Graph::insert_edge(int i, int j) {
     this->N_minus[j].push_back(i);
 
     adj_matrix[i][j] = 1;
-
+    
     this->curr_arc += 1;
+    this->m = curr_arc;
 }
 
-void Graph::read_cordinates(fstream& entrada) {
+void Graph::read_cordinates() {
     vector<float> x(n + 1), y(n + 1);
     for(int i = 0; i < n; i++) {
         int u;
-        entrada >> u;
-        entrada >> x[u] >> y[u];
+        cin >> u;
+        cin >> x[u] >> y[u];
     }
-    int curr_arc = 0;
     //calc as distancias euclidianas
-    for(int i = 1; i <= n; i++) {
-        for(int j = 1; j <= n; j++) {
+    for(int i = 1; i <= this->n; i++) {
+        for(int j = 1; j <= this->n; j++) {
             if(i == j) continue;
             insert_edge(i, j);
         }
